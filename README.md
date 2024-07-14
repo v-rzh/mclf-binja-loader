@@ -1,21 +1,33 @@
-# MobiCore Loader Format (v0.0.1)
+# MobiCore Loader Format (v0.0.2)
 Author: **vrzh**
 
 _Loader for MobiCore trustlets and secure drivers_
 
 ## Description:
-MCLF is a format for MobiCore trustlets and drivers. This plugin will map the trustlet/secure driver and resolve known calls to `mcLib`. 
+
+Loader for MobiCore trustlets and secure drivers
+
 
 ## Installation Instructions
-To install, clone this repo into the Binary Ninja plugin directory (`Plugins->Open Plugin Folder...`):
 
-`$ git clone https://github.com/v-rzh/mclf-binja-loader.git`
+### Darwin
+
+
+
+### Windows
+
+
+
+### Linux
+
+
 
 ## Minimum Version
 
 This plugin requires the following minimum version of Binary Ninja:
 
 * 3233
+
 
 ## License
 
