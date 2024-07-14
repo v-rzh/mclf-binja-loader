@@ -141,7 +141,7 @@ class MCLF_Loader(BinaryView):
             struct_t.append(Type.int(4, sign=False), "permittedHwCfg")
 
         with StructureBuilder.builder(typelib, "mclfHeaderV24_t") as struct_t:
-            struct_t.append(Type.structure_type(typelib.get_named_type("mclfHeaderV23_t")), "mclfHeaderV2")
+            struct_t.append(Type.structure_type(typelib.get_named_type("mclfHeaderV23_t")), "mclfHeaderV23")
             struct_t.append(Type.int(4, sign=False), "gp_level")
             struct_t.append(Type.int(4, sign=False), "attestationOffset")
 
