@@ -1,3 +1,5 @@
+# List is from https://github.com/NWMonster/binja_mclf/blob/master/find_mclib.py
+# Many still missing
 API_LIST = {
 0x80000000:'mcLib_init',
 # tlApi
