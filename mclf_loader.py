@@ -88,6 +88,23 @@ class MCLF_Loader(BinaryView):
         mem_enum_type.append("MCLF_MEM_TYPE_INTERNAL", 1)
         mem_enum_type.append("MCLF_MEM_TYPE_EXTERNAL", 2)
     
+        flags_enum_type = EnumerationBuilder.create([], None, arch=self.arch)
+        flags_enum_type.append("MC_SERVICE_HEADER_FLAGS_PERMANENT", 1)
+        flags_enum_type.append("MC_SERVICE_HEADER_FLAGS_NO_CONTROL_INTERFACE", 2)
+        flags_enum_type.append("MC_SERVICE_HEADER_FLAGS_PERMANENT | MC_SERVICE_HEADER_FLAGS_NO_CONTROL_INTERFACE", 3)
+        flags_enum_type.append("MC_SERVICE_HEADER_FLAGS_DEBUGGABLE", 4)
+        flags_enum_type.append("MC_SERVICE_HEADER_FLAGS_PERMANENT | MC_SERVICE_HEADER_FLAGS_DEBUGGABLE", 5)
+        flags_enum_type.append("MC_SERVICE_HEADER_FLAGS_NO_CONTROL_INTERFACE | MC_SERVICE_HEADER_FLAGS_DEBUGGABLE", 6)
+        flags_enum_type.append("MC_SERVICE_HEADER_FLAGS_PERMANENT | MC_SERVICE_HEADER_FLAGS_NO_CONTROL_INTERFACE | MC_SERVICE_HEADER_FLAGS_DEBUGGABLE", 7)
+        flags_enum_type.append("MC_SERVICE_HEADER_FLAGS_EXTENDED_LAYOUT", 8)
+        flags_enum_type.append("MC_SERVICE_HEADER_FLAGS_PERMANENT | MC_SERVICE_HEADER_FLAGS_EXTENDED_LAYOUT", 9)
+        flags_enum_type.append("MC_SERVICE_HEADER_FLAGS_NO_CONTROL_INTERFACE | MC_SERVICE_HEADER_FLAGS_EXTENDED_LAYOUT", 10)
+        flags_enum_type.append("MC_SERVICE_HEADER_FLAGS_PERMANENT | MC_SERVICE_HEADER_FLAGS_NO_CONTROL_INTERFACE | MC_SERVICE_HEADER_FLAGS_EXTENDED_LAYOUT", 11)
+        flags_enum_type.append("MC_SERVICE_HEADER_FLAGS_DEBUGGABLE | MC_SERVICE_HEADER_FLAGS_EXTENDED_LAYOUT", 12)
+        flags_enum_type.append("MC_SERVICE_HEADER_FLAGS_PERMANENT | MC_SERVICE_HEADER_FLAGS_DEBUGGABLE | MC_SERVICE_HEADER_FLAGS_EXTENDED_LAYOUT", 13)
+        flags_enum_type.append("MC_SERVICE_HEADER_FLAGS_NO_CONTROL_INTERFACE | MC_SERVICE_HEADER_FLAGS_DEBUGGABLE | MC_SERVICE_HEADER_FLAGS_EXTENDED_LAYOUT", 14)
+        flags_enum_type.append("MC_SERVICE_HEADER_FLAGS_PERMANENT | MC_SERVICE_HEADER_FLAGS_NO_CONTROL_INTERFACE | MC_SERVICE_HEADER_FLAGS_DEBUGGABLE | MC_SERVICE_HEADER_FLAGS_EXTENDED_LAYOUT", 15)
+
         with StructureBuilder.builder(typelib, "segmentDescriptor_t") as struct_t:
             struct_t.append(Type.int(4, sign=False), "start")
             struct_t.append(Type.int(4, sign=False), "len")
@@ -105,7 +122,7 @@ class MCLF_Loader(BinaryView):
 
         with StructureBuilder.builder(typelib, "mclfHeaderV2_t") as struct_t:
             struct_t.append(Type.structure_type(typelib.get_named_type("mclfIntro_t")), "intro")
-            struct_t.append(Type.int(4, sign=False), "flags")
+            struct_t.append(flags_enum_type.immutable_copy(), "flags")
             struct_t.append(mem_enum_type.immutable_copy(), "memType")
             struct_t.append(service_enum_type.immutable_copy(), "serviceType")
             struct_t.append(Type.int(4, sign=False), "numInstances")
