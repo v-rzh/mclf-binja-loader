@@ -15,7 +15,7 @@ To install, clone this repo into the Binary Ninja plugin directory (`Plugins->Op
 
 This plugin requires the following minimum version of Binary Ninja:
 
-* 5336
+* 3233
 
 ## License
 
