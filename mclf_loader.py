@@ -7,6 +7,7 @@ class MCLF_Loader(BinaryView):
     magic_le = b"MCLF"
     magic_be = b"FLCM"
     MCLF_TEXT_DESCRIPTOR_OFFT = 128
+    MCLF_MCLIB_ENTRY_FIELD = 0x108c
 
     def log(self, msg, error=False):
         msg = f"[MCLF Loader] {msg}"
@@ -40,12 +41,18 @@ class MCLF_Loader(BinaryView):
         return True
 
     def resolve_mc_lib(self):
-        for ref in self.get_code_refs(0x108c):
+        for ref in self.get_code_refs(self.MCLF_MCLIB_ENTRY_FIELD):
             for inst in ref.function.instructions:
                 if inst[0][0].text == "bx" or inst[0][0].text == "blx":
                     mc_lib_num = ref.function.get_reg_value_at(inst[1], "r0").value
                     if mc_lib_num in API_LIST:
                         ref.function.name = API_LIST[mc_lib_num]
+                    else:
+                        self.log(f"Unknown api number: {hex(mc_lib_num)}")
+                        if mc_lib_num > 0x1000:
+                            ref.function.name = f"drApiUnknown_{hex(mc_lib_num)}"
+                        else:
+                            ref.function.name = f"tlApiUnknown_{hex(mc_lib_num)}"
 
     def init(self):
         self.entry = self.reader.read32(0x44)
@@ -149,19 +156,16 @@ class MCLF_Loader(BinaryView):
                                SegmentFlag.SegmentReadable |
                                SegmentFlag.SegmentExecutable))
 
+        self.add_user_segment(self.data_va, self.data_len + self.bss_len, self.text_len,
+                              self.data_len + self.bss_len,
+                              (SegmentFlag.SegmentContainsData |
+                               SegmentFlag.SegmentReadable))
+
         self.add_user_section(".text", self.text_va, self.text_len,
                               SectionSemantics.ReadOnlyCodeSectionSemantics)
         
-        self.add_user_segment(self.data_va, self.data_len, self.text_len, self.data_len,
-                              (SegmentFlag.SegmentContainsData |
-                               SegmentFlag.SegmentReadable))
         self.add_user_section(".data", self.data_va, self.data_len,
                               SectionSemantics.ReadWriteDataSectionSemantics)
-
-        self.add_user_segment(self.data_va+self.data_len, self.bss_len,
-                              self.text_len+self.data_len, self.bss_len,
-                              (SegmentFlag.SegmentContainsData |
-                               SegmentFlag.SegmentReadable))
 
         self.add_user_section(".bss", self.data_va+self.data_len, self.bss_len,
                               SectionSemantics.ReadWriteDataSectionSemantics)
