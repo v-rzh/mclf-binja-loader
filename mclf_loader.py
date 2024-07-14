@@ -48,7 +48,6 @@ class MCLF_Loader(BinaryView):
                     if mc_lib_num in API_LIST:
                         ref.function.name = API_LIST[mc_lib_num]
                     else:
-                        self.log(f"Unknown api number: {hex(mc_lib_num)}")
                         if mc_lib_num > 0x1000:
                             ref.function.name = f"drApiUnknown_{hex(mc_lib_num)}"
                         else:
