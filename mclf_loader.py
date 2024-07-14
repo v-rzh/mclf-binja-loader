@@ -22,13 +22,15 @@ class MCLF_Loader(BinaryView):
 
     @classmethod
     def is_valid_for_data(self, data):
-        match data.read(0, 4):
-            case self.magic_le:
-                self.endianness = Endianness.LittleEndian
-                return True
-            case self.magic_be:
-                self.endianness = Endianness.BigEndian
-                return True
+        magic = data.read(0, 4)
+        if magic == self.magic_le:
+            self.endianness = Endianness.LittleEndian
+            return True
+
+        if magic == self.magic_be:
+            self.endianness = Endianness.BigEndian
+            return True
+
         return False
 
     def perform_get_default_endianness(self):
@@ -169,25 +171,18 @@ class MCLF_Loader(BinaryView):
         self.add_user_section(".bss", self.data_va+self.data_len, self.bss_len,
                               SectionSemantics.ReadWriteDataSectionSemantics)
 
-        match self.version:
-            case 0x20001:
-                self.define_user_data_var(self.text_va, self.import_library_type("mclfHeaderV2_t",
-                                                                                 typelib))
-            case 0x20002:
-                self.define_user_data_var(self.text_va, self.import_library_type("mclfHeaderV2_t",
-                                                                                 typelib))
-            case 0x20003:
-                self.define_user_data_var(self.text_va, self.import_library_type("mclfHeaderV23_t",
-                                                                                 typelib))
-            case 0x20004:
-                self.define_user_data_var(self.text_va, self.import_library_type("mclfHeaderV24_t",
-                                                                                 typelib))
-            case 0x20005:
-                self.define_user_data_var(self.text_va, self.import_library_type("mclfHeaderV24_t",
-                                                                                 typelib))
-            case _:
-                self.log(f"Invalid or unsupported MCLF version {hex(self.version)}", error=True)
-                return False
+        if self.version == 0x20001 or self.version == 0x20002:
+            self.define_user_data_var(self.text_va, self.import_library_type("mclfHeaderV2_t",
+                                                                             typelib))
+        elif self.version == 0x20003:
+            self.define_user_data_var(self.text_va, self.import_library_type("mclfHeaderV23_t",
+                                                                             typelib))
+        elif self.version >= 0x20004:
+            self.define_user_data_var(self.text_va, self.import_library_type("mclfHeaderV24_t",
+                                                                             typelib))
+        else:
+            self.log(f"Invalid or unsupported MCLF version {hex(self.version)}", error=True)
+            return False
 
         self.define_user_data_var(self.text_va+self.MCLF_TEXT_DESCRIPTOR_OFFT,
                                   self.import_library_type("mclfTextHeader_t", typelib))
