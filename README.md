@@ -11,6 +11,13 @@ To install, clone this repo into the Binary Ninja plugin directory `Plugins->Ope
 
 `$ git clone https://github.com/v-rzh/mclf-binja-loader.git`
 
+When installing a release, untar/unzip the release into that directory:
+```s
+$ tar xzvf mclf-binja-loader-0.0.2.tar.gz
+$ mv mclf-binja-loader-0.0.2 mclf-binja-loader
+```
+
+
 ## Minimum Version
 
 This plugin requires the following minimum version of Binary Ninja:
