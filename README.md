@@ -1,4 +1,4 @@
-# MobiCore Loader Format (v0.0.2)
+# MobiCore Loader Format (v0.0.3)
 Author: **vrzh**
 
 _Loader for MobiCore trustlets and secure drivers_
@@ -15,8 +15,8 @@ To install, clone this repo into the Binary Ninja plugin directory `Plugins->Ope
 
 When installing a release, untar/unzip the release into that directory:
 ```s
-$ tar xzvf mclf-binja-loader-0.0.2.tar.gz
-$ mv mclf-binja-loader-0.0.2 mclf-binja-loader
+$ tar xzvf mclf-binja-loader-x.x.x.tar.gz
+$ mv mclf-binja-loader-x.x.x mclf-binja-loader
 ```
 
 
