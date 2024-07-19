@@ -56,24 +56,22 @@ class MCLF_Loader(BinaryView):
         Ideally we want to use the get_reg_value_at method, however on Linux
         when that method is called in an analysis completion event handler,
         Binary Ninja freezes. Need to use this work around until that's fixed.
+        It appears fetching mlil will cause a similar hang. 
         """
         for ref in self.get_code_refs(self.MCLF_MCLIB_ENTRY_FIELD):
-            instructions = list(ref.function.mlil.instructions)
+            instructions = list(ref.function.instructions)
             for i in range(0, len(instructions)):
                 inst = instructions[i]
-                if type(inst) == MediumLevelILCall:
-                    if len(inst.params) > 1:
-                        if type(inst.params[0]) == MediumLevelILConst:
-                            self.rename_mc_lib_func(ref.function, inst.params[0].value.value)
-                            break
-                if type(inst) == MediumLevelILJump:
+                if inst[0][0].text == "bx" or inst[0][0].text == "blx":
                     for j in range(1, i+1):
-                        b_inst = instructions[i-j]
-                        if type(b_inst) == MediumLevelILSetVar:
-                            if b_inst.dest.name.startswith("r0"):
-                                if type(b_inst.src) == MediumLevelILConst:
-                                    self.rename_mc_lib_func(ref.function, b_inst.src.value.value)
-                                    break
+                        inst = instructions[i-j]
+                        if inst[0][0].text.startswith("mov"):
+                            if inst[0][2].text == "r0":
+                                if inst[0][-1].text.startswith("0x"):
+                                    self.rename_mc_lib_func(ref.function, int(inst[0][-1].text, 16))
+                                elif inst[0][-1].text.isnumeric():
+                                    self.rename_mc_lib_func(ref.function, int(inst[0][-1].text))
+                                break;
 
     def init(self):
         self.entry = self.reader.read32(0x44)
