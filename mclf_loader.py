@@ -42,18 +42,38 @@ class MCLF_Loader(BinaryView):
     def perform_is_executable(self):
         return True
 
+    def rename_mc_lib_func(self, function, mc_lib_num):
+        if mc_lib_num in API_LIST:
+            function.name = API_LIST[mc_lib_num]
+        else:
+            if mc_lib_num > 0x1000:
+                function.name = f"drApiUnknown_{hex(mc_lib_num)}"
+            else:
+                function.name = f"tlApiUnknown_{hex(mc_lib_num)}"
+
     def resolve_mc_lib(self):
+        """
+        Ideally we want to use the get_reg_value_at method, however on Linux
+        when that method is called in an analysis completion event handler,
+        Binary Ninja freezes. Need to use this work around until that's fixed.
+        """
         for ref in self.get_code_refs(self.MCLF_MCLIB_ENTRY_FIELD):
-            for inst in ref.function.instructions:
-                if inst[0][0].text == "bx" or inst[0][0].text == "blx":
-                    mc_lib_num = ref.function.get_reg_value_at(inst[1], "r0").value
-                    if mc_lib_num in API_LIST:
-                        ref.function.name = API_LIST[mc_lib_num]
-                    else:
-                        if mc_lib_num > 0x1000:
-                            ref.function.name = f"drApiUnknown_{hex(mc_lib_num)}"
-                        else:
-                            ref.function.name = f"tlApiUnknown_{hex(mc_lib_num)}"
+            instructions = list(ref.function.mlil.instructions)
+            for i in range(0, len(instructions)):
+                inst = instructions[i]
+                if type(inst) == MediumLevelILCall:
+                    if len(inst.params) > 1:
+                        if type(inst.params[0]) == MediumLevelILConst:
+                            self.rename_mc_lib_func(ref.function, inst.params[0].value.value)
+                            break
+                if type(inst) == MediumLevelILJump:
+                    for j in range(1, i+1):
+                        b_inst = instructions[i-j]
+                        if type(b_inst) == MediumLevelILSetVar:
+                            if b_inst.dest.name.startswith("r0"):
+                                if type(b_inst.src) == MediumLevelILConst:
+                                    self.rename_mc_lib_func(ref.function, b_inst.src.value.value)
+                                    break
 
     def init(self):
         self.entry = self.reader.read32(0x44)
@@ -209,7 +229,7 @@ class MCLF_Loader(BinaryView):
         self.define_user_symbol(Symbol(SymbolType.DataSymbol, self.text_va+self.MCLF_TEXT_DESCRIPTOR_OFFT,
                                        "__mclf_text_descriptor"))
 
-        AnalysisCompletionEvent(self, self.resolve_mc_lib)
+        self.add_analysis_completion_event(self.resolve_mc_lib)
 
         return True
 
